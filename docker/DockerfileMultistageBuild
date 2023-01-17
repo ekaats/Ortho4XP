@@ -1,0 +1,33 @@
+FROM python:3.9-alpine3.17 AS compile-image
+
+WORKDIR /
+
+# INSTALL BUILD DEPENDENCIES
+RUN apk add make automake gcc g++ subversion git python3-dev \
+        proj proj-util proj-dev \
+        geos-dev \
+        tk
+
+# INSTALL/BUILD PYTHON PACKAGES/WHEELS
+RUN python -m venv /opt/venv      && \
+    source /opt/venv/bin/activate && \
+    pip install --upgrade pip     && \
+    pip install requests numpy Pillow pyproj shapely rtree tk
+
+
+FROM python:3.9-alpine3.17
+
+# INSTALL ORTHO4XP REQUIRED DEPENDENCIES
+# libc6-compat: https://stackoverflow.com/a/66974607
+RUN apk add --no-cache proj proj-util geos tk fontconfig ttf-dejavu libc6-compat imagemagick
+
+# COPY PYTHON PACKAGES (VIRTUAL ENVIRONMENT)
+COPY --from=compile-image /opt/venv /opt/venv
+
+# COPY ORTHO4XP (THE COMPLETE REPO) INTO THE CONTAINER
+COPY ./ /app/
+
+# FINALIZE
+ENV PATH="/opt/venv/bin:$PATH"
+WORKDIR /app
+ENTRYPOINT ["/app/Ortho4XP_v130.py"]
