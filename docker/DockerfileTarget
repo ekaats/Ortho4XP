@@ -1,0 +1,18 @@
+FROM o4xp-compile-image AS compile-image
+
+FROM python:3.9-alpine3.17
+
+# INSTALL ORTHO4XP REQUIRED DEPENDENCIES
+# libc6-compat: https://stackoverflow.com/a/66974607
+RUN apk add --no-cache proj proj-util geos tk fontconfig ttf-dejavu libc6-compat imagemagick
+
+# COPY PYTHON PACKAGES (VIRTUAL ENVIRONMENT)
+COPY --from=compile-image /opt/venv /opt/venv
+
+# COPY ORTHO4XP (THE COMPLETE REPO) INTO THE CONTAINER
+COPY ./ /app/
+
+# FINALIZE
+ENV PATH="/opt/venv/bin:$PATH"
+WORKDIR /app
+ENTRYPOINT ["/app/Ortho4XP_v130.py"]

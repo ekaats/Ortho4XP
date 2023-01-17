@@ -1,0 +1,15 @@
+FROM python:3.9-alpine3.17
+
+WORKDIR /
+
+# INSTALL BUILD DEPENDENCIES
+RUN apk add make automake gcc g++ subversion git python3-dev \
+        proj proj-util proj-dev \
+        geos-dev \
+        tk
+
+# INSTALL/BUILD PYTHON PACKAGES/WHEELS
+RUN python -m venv /opt/venv      && \
+    source /opt/venv/bin/activate && \
+    pip install --upgrade pip     && \
+    pip install requests numpy Pillow pyproj shapely rtree tk
